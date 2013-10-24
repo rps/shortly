@@ -7,7 +7,9 @@ window.Shortly = Backbone.View.extend({
         <li><a href="#" class="index">All Links</a></li> \
         <li><a href="#" class="create">Shorten</a></li> \
         <li><form><input type="text" id="filter"><button type="submit" class="submit">Submit</button></form></li> \
-        <li><button type="submit" id="reorder">Reorder</button></li> \
+        <li><button type="submit" id="reorder" name="updated_at">Sort by Last Visited</button></li> \
+        <li><button type="submit" id="reorder" name="title">Sort Alphabetically</button></li> \
+        <li><button type="submit" id="reorder" name="visits">Sort by Visits</button></li> \
       </ul> \
       </div> \
       <div id="container"></div>'
@@ -65,11 +67,8 @@ window.Shortly = Backbone.View.extend({
   },
 
   orderBy: function(e){
-    this.links.comparator = function(link) {
-      return -link.get("updated_at");
-    };
-    this.$el.find('#container').html( this.linksView.render().el );
-    this.links.sort();
+    var sortOn = e.currentTarget.name;
+    this.linksView.reorder(sortOn);
   }
 
 

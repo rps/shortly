@@ -24,6 +24,10 @@ button {
   margin-left: 15px;
 }
 
+#reorder {
+  margin-top: 17px;
+}
+
 .navigation {
   width: 100%;
   height: 40px;
