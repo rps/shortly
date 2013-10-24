@@ -6,6 +6,8 @@ window.Shortly = Backbone.View.extend({
       <ul> \
         <li><a href="#" class="index">All Links</a></li> \
         <li><a href="#" class="create">Shorten</a></li> \
+        <li><form><input type="text" id="filter"><button type="submit" class="submit">Submit</button></form></li> \
+        <li><button type="submit" id="reorder">Reorder</button></li> \
       </ul> \
       </div> \
       <div id="container"></div>'
@@ -13,12 +15,17 @@ window.Shortly = Backbone.View.extend({
 
   events: {
     "click li a.index":  "renderIndexView",
-    "click li a.create": "renderCreateView"
+    "click li a.create": "renderCreateView",
+    "keyup #filter": "filterByName",
+    "click #reorder": "orderBy"
   },
 
   initialize: function(){
     console.log( "Shortly is running" );
     $('body').append(this.render().el);
+    this.links = new Shortly.Links();
+    this.linksView = new Shortly.LinksView( {collection: this.links} );
+    this.linkCreateView = new Shortly.LinkCreateView();
     this.renderIndexView(); // default view
   },
 
@@ -29,16 +36,13 @@ window.Shortly = Backbone.View.extend({
 
   renderIndexView: function(e){
     e && e.preventDefault();
-    var links = new Shortly.Links();
-    var linksView = new Shortly.LinksView( {collection: links} );
-    this.$el.find('#container').html( linksView.render().el );
+    this.$el.find('#container').html( this.linksView.render().el );
     this.updateNav('index');
   },
 
   renderCreateView: function(e){
     e && e.preventDefault();
-    var linkCreateView = new Shortly.LinkCreateView();
-    this.$el.find('#container').html( linkCreateView.render().el );
+    this.$el.find('#container').html( this.linkCreateView.render().el );
     this.updateNav('create');
   },
 
@@ -47,6 +51,26 @@ window.Shortly = Backbone.View.extend({
             .removeClass('selected')
             .filter('.'+className)
             .addClass('selected');
+  },
+
+  filterByName: function(e){
+    var pattern = new RegExp($('#filter').val(),'i');
+    $('.title').each(function(item){
+      if(pattern.test($(this).text())){
+        $(this).parent().parent().removeClass('hidden');
+      } else {
+        $(this).parent().parent().addClass('hidden');
+      }
+    });
+  },
+
+  orderBy: function(e){
+    this.links.comparator = function(link) {
+      return -link.get("updated_at");
+    };
+    this.$el.find('#container').html( this.linksView.render().el );
+    this.links.sort();
   }
+
 
 });

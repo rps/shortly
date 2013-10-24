@@ -4,6 +4,7 @@ Shortly.LinksView = Backbone.View.extend({
 
   initialize: function(){
     this.collection.on('sync', this.addAll, this);
+    this.collection.on('sort', this.test, this);
     this.collection.fetch();
   },
 
@@ -17,8 +18,14 @@ Shortly.LinksView = Backbone.View.extend({
   },
 
   addOne: function(item){
+    console.log("adding one");
     var view = new Shortly.LinkView( {model: item} );
     this.$el.append(view.render().el);
+  },
+
+  test: function(e){
+    console.log('sorted');
   }
+
 
 });

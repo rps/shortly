@@ -1,3 +1,4 @@
+require 'logger'
 require 'sinatra'
 require "sinatra/reloader" if development?
 require 'active_record'
@@ -28,6 +29,9 @@ end
 # turn off root element rendering in JSON
 ActiveRecord::Base.include_root_in_json = false
 
+ActiveRecord::Base.logger = Logger.new(STDOUT)
+
+
 ###########################################################
 # Models
 ###########################################################
@@ -48,6 +52,7 @@ class Link < ActiveRecord::Base
 end
 
 class Click < ActiveRecord::Base
+    attr_reader :updated_at
     belongs_to :link, counter_cache: :visits
 end
 
@@ -60,9 +65,9 @@ get '/' do
 end
 
 get '/links' do
-    links = Link.order("created_at DESC")
+    links = Link.order("visits DESC") #visits
     links.map { |link|
-        link.as_json.merge(base_url: request.base_url)
+        link.as_json.merge( base_url: request.base_url)
     }.to_json
 end
 
@@ -79,6 +84,7 @@ get '/:url' do
     link = Link.find_by_code params[:url]
     raise Sinatra::NotFound if link.nil?
     link.clicks.create!
+    link.touch # changes updated_at
     redirect link.url
 end
 
@@ -100,7 +106,8 @@ def read_url_head url
 end
 
 def get_url_title url
+    domain = /www\.(.*)\..*/.match(url.host)
     # Nokogiri::HTML.parse( read_url_head url ).title
     result = read_url_head(url).match(/<title>(.*)<\/title>/)
-    result.nil? ? "" : result[1]
+    result.nil? ? domain[1] : result[1] 
 end
